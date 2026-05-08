@@ -24,6 +24,7 @@ import {
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { AuthButton } from './components/AuthButton';
 import { handleFirestoreError, OperationType } from './lib/firestore';
+import { requestNotificationPermission } from './lib/fcm';
 
 // Sub-components
 import WorkoutView from './components/WorkoutView';
@@ -72,6 +73,9 @@ export default function App() {
   // Firebase Synchronization
   useEffect(() => {
     if (!user) return;
+
+    // Request notification permission
+    requestNotificationPermission();
 
     // Sync from Firestore
     const uid = user.uid;

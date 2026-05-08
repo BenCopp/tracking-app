@@ -35,12 +35,30 @@ export default function HabitView({ habits, setHabits, setHeaderAction }: HabitV
 
   React.useEffect(() => {
     setHeaderAction(
-      <button 
-        onClick={() => setShowAddModal(true)}
-        className="p-2.5 bg-[#3B82F6] rounded shadow-lg shadow-blue-500/20 text-white hover:bg-blue-600 transition-colors"
-      >
-        <Plus size={16} />
-      </button>
+      <div className="flex gap-2">
+        <button 
+          onClick={() => {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Habit Reminder', {
+                body: 'Time to check your habits!',
+                icon: '/icon-192x192.png'
+              });
+            } else {
+              alert('Notifications not permitted. Please enable in browser settings.');
+            }
+          }}
+          className="p-2 bg-yellow-500 rounded shadow-lg text-black hover:bg-yellow-600 transition-colors"
+          title="Test Notification"
+        >
+          <Bell size={16} />
+        </button>
+        <button 
+          onClick={() => setShowAddModal(true)}
+          className="p-2.5 bg-[#3B82F6] rounded shadow-lg shadow-blue-500/20 text-white hover:bg-blue-600 transition-colors"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
     );
     return () => setHeaderAction(null);
   }, [setHeaderAction]);
