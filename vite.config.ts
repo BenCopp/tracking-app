@@ -9,9 +9,11 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, '.'),
     },
-    server: {
-      // HMR can be disabled by setting DISABLE_HMR.
-      hmr: process.env.DISABLE_HMR !== 'true',
-    },
+  },
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['tracking-app-645675605165.europe-west1.run.app'],
+    // HMR can be disabled by setting DISABLE_HMR.
+    hmr: process.env.DISABLE_HMR !== 'true',
   },
 });
