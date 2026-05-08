@@ -8,7 +8,8 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3000;
+  const isDev = process.env.NODE_ENV === 'development';
 
   app.use(express.json());
 
@@ -42,8 +43,8 @@ const PORT = process.env.PORT || 3000;
     });
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  // Vite middleware for development only
+  if (isDev) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
