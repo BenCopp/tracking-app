@@ -27,7 +27,7 @@ import {
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { AuthButton } from './components/AuthButton';
 import { handleFirestoreError, OperationType } from './lib/firestore';
-import { requestNotificationPermission } from './lib/fcm';
+// import { requestNotificationPermission } from './lib/fcm';
 
 // Sub-components
 import WorkoutView from './components/WorkoutView';
@@ -77,12 +77,15 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
 
-    // Request notification permission
-    requestNotificationPermission();
+    // Request notification permission (non-blocking)
+    // requestNotificationPermission().catch(err => {
+    //   console.error('Notification permission request failed:', err);
+    // });
 
     // Create default user profile if it doesn't exist
     const createDefaultProfile = async () => {
       try {
+        console.log('Checking user profile for uid:', user.uid);
         const profileRef = doc(db, 'users', user.uid);
         const profileSnap = await getDoc(profileRef);
         if (!profileSnap.exists()) {
@@ -96,10 +99,13 @@ export default function App() {
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
           });
-          console.log('Default profile created');
+          console.log('Default profile created successfully');
+        } else {
+          console.log('User profile already exists');
         }
       } catch (error) {
-        console.error('Error creating default profile:', error);
+        console.error('Error creating/checking default profile:', error);
+        // Continue anyway - don't break the app
       }
     };
     createDefaultProfile();
