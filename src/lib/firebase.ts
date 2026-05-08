@@ -5,7 +5,7 @@ import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = getFirestore(app, "ai-studio-ce83aca5-5156-43bb-8cc8-8f8014669ded");
 
 // Test connection strictly according to guidelines
 async function testConnection() {
