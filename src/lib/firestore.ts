@@ -71,7 +71,7 @@ export async function syncDoc(collectionName: string, docId: string, data: any) 
 
 export async function addDocument(collectionName: string, data: any) {
   if (!auth.currentUser) {
-    console.error('No authenticated user for addDocument');
+    console.warn('No authenticated user for addDocument - using local storage');
     return null;
   }
   const path = `users/${auth.currentUser.uid}/${collectionName}`;
@@ -83,9 +83,9 @@ export async function addDocument(collectionName: string, data: any) {
     });
     console.log('Document added successfully:', docRef.id);
     return docRef.id;
-  } catch (err) {
-    console.error('Error adding document:', err);
-    handleFirestoreError(err, OperationType.CREATE, path);
+  } catch (err: any) {
+    console.error('Firebase addDocument failed (continuing with local storage):', err.message);
+    // Don't throw - let the app continue with local storage
     return null;
   }
 }

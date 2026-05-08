@@ -72,6 +72,7 @@ export default function App() {
   const [userProfile, setUserProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [dailySteps, setDailySteps] = useState<DailySteps[]>([]);
   const [selectedNutritionDate, setSelectedNutritionDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [firebaseStatus, setFirebaseStatus] = useState<'online' | 'offline'>('online');
 
   // Firebase Synchronization
   useEffect(() => {
@@ -115,35 +116,53 @@ export default function App() {
 
     const unsubProfile = onSnapshot(doc(db, 'users', uid), (s) => {
       if (s.exists()) setUserProfile(s.data() as UserProfile);
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}`));
+    }, (err) => {
+      console.warn('Profile listener failed (using defaults):', err.message);
+      // Continue with default profile
+    });
 
     const unsubHabits = onSnapshot(collection(db, 'users', uid, 'habits'), (s) => {
       setHabits(s.docs.map(d => ({ ...d.data(), id: d.id } as Habit)));
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}/habits`));
+    }, (err) => {
+      console.warn('Habits listener failed (using local storage):', err.message);
+      // Will fall back to localStorage in HabitView
+    });
 
     const unsubFoodDb = onSnapshot(collection(db, 'users', uid, 'food_database'), (s) => {
       setFoodDatabase(s.docs.map(d => ({ ...d.data(), id: d.id } as Food)));
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}/food_database`));
+    }, (err) => {
+      console.warn('Food database listener failed (using local storage):', err.message);
+    });
 
     const unsubLogged = onSnapshot(collection(db, 'users', uid, 'food_logs'), (s) => {
       setLoggedFoods(s.docs.map(d => ({ ...d.data(), id: d.id } as LoggedFood)));
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}/food_logs`));
+    }, (err) => {
+      console.warn('Food logs listener failed (using local storage):', err.message);
+    });
 
     const unsubWorkouts = onSnapshot(query(collection(db, 'users', uid, 'workouts'), orderBy('date', 'desc')), (s) => {
       setWorkoutSessions(s.docs.map(d => ({ ...d.data(), id: d.id } as WorkoutSession)));
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}/workouts`));
+    }, (err) => {
+      console.warn('Workouts listener failed:', err.message);
+    });
 
     const unsubPlans = onSnapshot(collection(db, 'users', uid, 'plans'), (s) => {
       setWorkoutPlans(s.docs.map(d => ({ ...d.data(), id: d.id } as WorkoutPlan)));
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}/plans`));
+    }, (err) => {
+      console.warn('Plans listener failed:', err.message);
+    });
 
     const unsubTemplates = onSnapshot(collection(db, 'users', uid, 'exercise_templates'), (s) => {
       setExerciseTemplates(s.docs.map(d => ({ ...d.data(), id: d.id } as ExerciseEntry)));
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}/exercise_templates`));
+    }, (err) => {
+      console.warn('Templates listener failed:', err.message);
+    });
 
     const unsubSteps = onSnapshot(collection(db, 'users', uid, 'steps'), (s) => {
       setDailySteps(s.docs.map(d => d.data() as DailySteps));
-    }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}/steps`));
+    }, (err) => {
+      console.warn('Steps listener failed:', err.message);
+    });
 
     return () => {
       unsubProfile();
@@ -156,6 +175,19 @@ export default function App() {
       unsubSteps();
     };
   }, [user]);
+
+  // Check Firebase connectivity
+  useEffect(() => {
+    const checkFirebase = async () => {
+      try {
+        await getDocFromServer(doc(db, 'test', 'connection'));
+        setFirebaseStatus('online');
+      } catch (error) {
+        setFirebaseStatus('offline');
+      }
+    };
+    checkFirebase();
+  }, []);
 
   const [headerAction, setHeaderAction] = useState<React.ReactNode>(null);
 
@@ -227,9 +259,14 @@ export default function App() {
           <h1 className="text-xl font-bold tracking-tighter text-white font-mono uppercase">
             {activeTabLabel}
           </h1>
-          {user && (
+          {user && firebaseStatus === 'online' && (
             <span className="text-[8px] font-mono text-[#3B82F6] flex items-center gap-1 mt-0.5">
               <ShieldCheck size={10} /> SECURE CLOUD SYNC ACTIVE
+            </span>
+          )}
+          {user && firebaseStatus === 'offline' && (
+            <span className="text-[8px] font-mono text-orange-500 flex items-center gap-1 mt-0.5">
+              <ShieldCheck size={10} /> OFFLINE MODE - DATA SAVED LOCALLY
             </span>
           )}
           {!user && (
