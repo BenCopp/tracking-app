@@ -70,15 +70,21 @@ export async function syncDoc(collectionName: string, docId: string, data: any) 
 }
 
 export async function addDocument(collectionName: string, data: any) {
-  if (!auth.currentUser) return null;
+  if (!auth.currentUser) {
+    console.error('No authenticated user for addDocument');
+    return null;
+  }
   const path = `users/${auth.currentUser.uid}/${collectionName}`;
+  console.log('Adding document to', path, 'data:', data);
   try {
     const docRef = await addDoc(collection(db, 'users', auth.currentUser.uid, collectionName), {
       ...data,
       createdAt: serverTimestamp()
     });
+    console.log('Document added successfully:', docRef.id);
     return docRef.id;
   } catch (err) {
+    console.error('Error adding document:', err);
     handleFirestoreError(err, OperationType.CREATE, path);
     return null;
   }

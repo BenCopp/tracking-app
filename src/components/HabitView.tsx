@@ -33,6 +33,26 @@ export default function HabitView({ habits, setHabits, setHeaderAction }: HabitV
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
+  // Load from localStorage on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('habits');
+    if (saved && !auth.currentUser) {
+      try {
+        const parsed = JSON.parse(saved);
+        setHabits(parsed);
+      } catch (e) {
+        console.error('Failed to load habits from localStorage');
+      }
+    }
+  }, []);
+
+  // Save to localStorage when habits change and not logged in
+  React.useEffect(() => {
+    if (!auth.currentUser && habits.length > 0) {
+      localStorage.setItem('habits', JSON.stringify(habits));
+    }
+  }, [habits]);
+
   React.useEffect(() => {
     setHeaderAction(
       <div className="flex gap-2">

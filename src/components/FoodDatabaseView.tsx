@@ -36,6 +36,26 @@ export default function FoodDatabaseView({ foodDatabase, setFoodDatabase, isAddi
   const [searchQuery, setSearchQuery] = useState('');
   const [editingFood, setEditingFood] = useState<Food | null>(null);
 
+  // Load from localStorage on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('foodDatabase');
+    if (saved && !auth.currentUser) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFoodDatabase(parsed);
+      } catch (e) {
+        console.error('Failed to load food database from localStorage');
+      }
+    }
+  }, []);
+
+  // Save to localStorage when foodDatabase changes and not logged in
+  React.useEffect(() => {
+    if (!auth.currentUser && foodDatabase.length > 0) {
+      localStorage.setItem('foodDatabase', JSON.stringify(foodDatabase));
+    }
+  }, [foodDatabase]);
+
   const filteredFoods = foodDatabase.filter(food => 
     food.name.toLowerCase().includes(searchQuery.toLowerCase())
   );

@@ -39,6 +39,26 @@ export default function NutritionView({
   const [weight, setWeight] = useState<number>(100);
   const [dbSearchQuery, setDbSearchQuery] = useState('');
 
+  // Load from localStorage on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('loggedFoods');
+    if (saved && !auth.currentUser) {
+      try {
+        const parsed = JSON.parse(saved);
+        setLoggedFoods(parsed);
+      } catch (e) {
+        console.error('Failed to load logged foods from localStorage');
+      }
+    }
+  }, []);
+
+  // Save to localStorage when loggedFoods changes and not logged in
+  React.useEffect(() => {
+    if (!auth.currentUser && loggedFoods.length > 0) {
+      localStorage.setItem('loggedFoods', JSON.stringify(loggedFoods));
+    }
+  }, [loggedFoods]);
+
   React.useEffect(() => {
     setHeaderAction(
       <button 

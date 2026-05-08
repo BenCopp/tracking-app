@@ -19,7 +19,10 @@ import {
   collection, 
   query, 
   onSnapshot, 
-  orderBy
+  orderBy,
+  getDoc,
+  setDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { AuthButton } from './components/AuthButton';
@@ -76,6 +79,30 @@ export default function App() {
 
     // Request notification permission
     requestNotificationPermission();
+
+    // Create default user profile if it doesn't exist
+    const createDefaultProfile = async () => {
+      try {
+        const profileRef = doc(db, 'users', user.uid);
+        const profileSnap = await getDoc(profileRef);
+        if (!profileSnap.exists()) {
+          console.log('Creating default user profile');
+          await setDoc(profileRef, {
+            height: 175,
+            weight: 75,
+            age: 25,
+            goalWeight: 70,
+            goals: { kcal: 2000, p: 150, c: 200, f: 60 },
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          console.log('Default profile created');
+        }
+      } catch (error) {
+        console.error('Error creating default profile:', error);
+      }
+    };
+    createDefaultProfile();
 
     // Sync from Firestore
     const uid = user.uid;
@@ -197,6 +224,11 @@ export default function App() {
           {user && (
             <span className="text-[8px] font-mono text-[#3B82F6] flex items-center gap-1 mt-0.5">
               <ShieldCheck size={10} /> SECURE CLOUD SYNC ACTIVE
+            </span>
+          )}
+          {!user && (
+            <span className="text-[8px] font-mono text-yellow-500 flex items-center gap-1 mt-0.5">
+              <ShieldCheck size={10} /> LOCAL STORAGE MODE - DATA SAVED LOCALLY
             </span>
           )}
         </div>
