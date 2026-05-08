@@ -183,7 +183,7 @@ export default function App() {
   }[activeTab];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] text-[#E0E0E0] font-sans selection:bg-[#3B82F6]/30 pb-24 overflow-x-hidden">
+    <div className="min-h-screen bg-[#0A0A0B] text-[#E0E0E0] font-sans selection:bg-[#3B82F6]/30 pb-10 overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[#0A0A0B]/80 backdrop-blur-md border-b border-[#2A2A2E] px-6 py-4 flex justify-between items-center">
         <div className="flex flex-col">
